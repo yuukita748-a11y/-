@@ -1,0 +1,6 @@
+{
+  "name": "暗記特化 単語帳",
+  "description": "スマホ最適化・一括インポート対応、英語・ドイツ語・フランス語などの多言語音声読み上げと忘却曲線SRS暗記学習アプリ",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
