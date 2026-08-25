@@ -113,6 +113,43 @@ export default function App() {
     return decks.find((d) => d.id === activeDeckId) || decks[0];
   }, [decks, activeDeckId]);
 
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  // PWA Install prompt listener
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setInstallPrompt(null);
+      showToast('🎉 単語帳 Pro のアプリインストールが完了しました！');
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (!installPrompt) {
+      alert('AndroidのChromeメニュー（右上︙）から「アプリをインストール」または「ホーム画面に追加」をタップしてください。');
+      return;
+    }
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setInstallPrompt(null);
+    }
+  };
+
   // Words belonging to current deck
   const currentDeckWords = useMemo(() => {
     return words.filter((w) => w.deckId === activeDeckId);
@@ -632,6 +669,33 @@ export default function App() {
               /* Main Study Setup Dashboard */
               <div className="space-y-6">
                 
+                {/* PWA Install Banner if prompt available or not installed */}
+                {installPrompt && !isInstalled && (
+                  <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-700 text-white rounded-2xl p-4 shadow-md flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 text-xl">
+                        📲
+                      </div>
+                      <div>
+                        <div className="font-extrabold text-sm sm:text-base leading-tight flex items-center gap-1.5">
+                          スマホに本物のアプリとしてインストール
+                          <span className="text-[10px] bg-white/25 px-1.5 py-0.5 rounded-full font-bold">Android推奨</span>
+                        </div>
+                        <div className="text-xs text-white/90 font-medium mt-0.5">
+                          ブラウザ枠なし・全画面でサクサク起動・オフライン暗記に対応
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleInstallApp}
+                      className="px-4 py-2 bg-white text-emerald-900 hover:bg-emerald-50 active:scale-95 font-extrabold text-xs sm:text-sm rounded-xl shadow-xs transition-all shrink-0 cursor-pointer"
+                    >
+                      今すぐインストール
+                    </button>
+                  </div>
+                )}
+
                 {/* Today's Deck Progress Quick Switcher Bar */}
                 <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
